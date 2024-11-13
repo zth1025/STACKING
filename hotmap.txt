@@ -1,0 +1,31 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+file_path = 'path_to_your_excel_file.xlsx'
+df = pd.read_excel(file_path)
+features = [
+    'RL emission (nm)', 'RL FWHM (nm)', 'Photoluminescence quantum yield (%)',
+    'Effective atomic number (a.u.)', 'Optical bandgap (eV)', 'a (Å)', 'b (Å)',
+    'c (Å)', 'a (o)', 'b (o)', 'g (o)', 'V (Å3 )'
+]
+correlation_matrix = df[features].corr()
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
+plt.title('Feature Correlation Matrix')
+plt.show()
+def remove_highly_correlated_features(corr_matrix, threshold=0.75):
+    columns = np.full((corr_matrix.shape[0],), True, dtype=bool)
+    for i in range(corr_matrix.shape[0]):
+        for j in range(i+1, corr_matrix.shape[0]):
+            if corr_matrix.iloc[i, j] >= threshold:
+                if columns[j]:
+                    columns[j] = False
+    selected_columns = corr_matrix.columns[columns]
+    return selected_columns
+selected_features = remove_highly_correlated_features(correlation_matrix)
+df_filtered = df[selected_features]
+output_file_path_filtered = 'filtered_features.xlsx'
+df_filtered.to_excel(output_file_path_filtered, index=False)
+
+print("result:", output_file_path_filtered)
