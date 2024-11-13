@@ -1,0 +1,38 @@
+import pandas as pd
+from rdkit import Chem
+from rdkit.Chem import AllChem, MACCSkeys, RDKFingerprint
+file_path = 'path_to_your_excel_file.xlsx'
+df = pd.read_excel(file_path)
+smiles_column = 'SMILES'
+def smiles_to_morgan_fingerprint(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol:
+        fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=2048)
+        return list(fp)
+    else:
+        return [None] * 2048
+def smiles_to_maccs(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol:
+        fp = MACCSkeys.GenMACCSKeys(mol)
+        return list(fp)
+    else:
+        return [None] * 167
+def smiles_to_topological_fingerprint(smiles):
+    mol = Chem.MolFromSmiles(smiles)
+    if mol:
+        fp = RDKFingerprint(mol)
+        return list(fp)
+    else:
+        return [None] * 2048
+df['Morgan_Fingerprint'] = df[smiles_column].apply(smiles_to_morgan_fingerprint)
+df['MACCS'] = df[smiles_column].apply(smiles_to_maccs)
+df['Topological_Fingerprint'] = df[smiles_column].apply(smiles_to_topological_fingerprint)
+morgan_df = pd.DataFrame(df['Morgan_Fingerprint'].tolist(), columns=[f'MF_{i}' for i in range(2048)])
+maccs_df = pd.DataFrame(df['MACCS'].tolist(), columns=[f'MACCS_{i}' for i in range(167)])
+topological_df = pd.DataFrame(df['Topological_Fingerprint'].tolist(), columns=[f'TPF_{i}' for i in range(2048)])
+df = df.drop(columns=['Morgan_Fingerprint', 'MACCS', 'Topological_Fingerprint'])
+df = pd.concat([df, morgan_df, maccs_df, topological_df], axis=1)
+output_file_path = 'molecular_fingerprints.xlsx'
+df.to_excel(output_file_path, index=False)
+print("result:", output_file_path)

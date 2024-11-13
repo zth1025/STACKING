@@ -1,0 +1,21 @@
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+file_path = 'path_to_your_excel_file.xlsx'
+df = pd.read_excel(file_path)
+features = [
+    'RL emission (nm)', 'RL FWHM (nm)', 'Photoluminescence quantum yield (%)',
+    'Effective atomic number (a.u.)', 'Optical bandgap (eV)', 'a (Å)', 'b (Å)',
+    'c (Å)', 'a (o)', 'b (o)', 'g (o)', 'V (Å3 )'
+]
+X = df[features]
+scaler = StandardScaler()
+X_standardized = scaler.fit_transform(X)
+df_standardized = pd.DataFrame(X_standardized, columns=features)
+min_max_scaler = MinMaxScaler()
+X_normalized = min_max_scaler.fit_transform(X)
+df_normalized = pd.DataFrame(X_normalized, columns=features)
+output_file_path_standardized = 'output_standardized.xlsx'
+output_file_path_normalized = 'output_normalized.xlsx'
+df_standardized.to_excel(output_file_path_standardized, index=False)
+df_normalized.to_excel(output_file_path_normalized, index=False)
+print("result:", output_file_path_standardized, "和", output_file_path_normalized)

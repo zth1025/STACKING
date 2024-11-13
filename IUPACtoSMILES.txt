@@ -1,0 +1,22 @@
+import pandas as pd
+import requests
+file_path = 'path_to_your_excel_file.xlsx'
+df = pd.read_excel(file_path)
+iupac_column = 'IUPAC_Name'
+def iupac_to_smiles(iupac_name):
+    url = f'https://opsin.ch.cam.ac.uk/opsin/{iupac_name}.json'
+    response = requests.get(url)
+    if response.status_code == 200:
+        try:
+            data = response.json()
+            smiles = data['smiles']
+            return smiles
+        except KeyError:
+            return None
+    else:
+        return None
+df['SMILES'] = df[iupac_column].apply(iupac_to_smiles)
+output_file_path = 'output_with_smiles.xlsx'
+df.to_excel(output_file_path, index=False)
+
+print("result:", output_file_path)
